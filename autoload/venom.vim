@@ -164,6 +164,7 @@ endfunction
 function! s:find_virtualenv(dir) abort
 	" Try to find certain directory names or placeholder text files that
 	" are probably the virtual-environment we're looking for.
+	let l:log = ['Searching within parents for ' . string(g:venom_root_markers)]
 
 	" Try tools first
 	let l:path = ''
@@ -188,7 +189,6 @@ function! s:find_virtualenv(dir) abort
 	endif
 
 	# Fallback to venvs/pyenv
-	let l:log = ['Searching within parents for ' . string(g:venom_root_markers)]
 	let l:path = s:find_parents(a:dir, g:venom_root_markers)
 	if ! empty(l:path)
 		if isdirectory(l:path)
