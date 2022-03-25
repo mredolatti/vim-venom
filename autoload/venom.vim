@@ -164,6 +164,30 @@ endfunction
 function! s:find_virtualenv(dir) abort
 	" Try to find certain directory names or placeholder text files that
 	" are probably the virtual-environment we're looking for.
+
+	" Try tools first
+	let l:path = ''
+	if g:venom_use_tools
+		call add(l:log, 'Searching with external executables')
+		for l:binary in keys(g:venom_tools)
+			if ! executable(l:binary)
+				continue
+			endif
+			let l:result = trim(system(g:venom_tools[l:binary]))
+			call extend(l:log, ['$ ' . g:venom_tools[l:binary], l:result])
+			if v:shell_error == 0 && ! empty(l:result)
+				let l:lines = split(l:result, '\n')
+				if len(l:lines) == 1
+					let l:path = matchstr(l:lines[0], '\zs/\S*')
+				else
+					call s:echo('error', printf('Erroneous shell output from "%s" %s',
+						\ l:binary, l:result))
+				endif
+			endif
+		endfor
+	endif
+
+	# Fallback to venvs/pyenv
 	let l:log = ['Searching within parents for ' . string(g:venom_root_markers)]
 	let l:path = s:find_parents(a:dir, g:venom_root_markers)
 	if ! empty(l:path)
@@ -190,28 +214,6 @@ function! s:find_virtualenv(dir) abort
 				endif
 			endif
 		endif
-	endif
-
-	" Use predefined executables to find virtualenv's location.
-	let l:path = ''
-	if g:venom_use_tools
-		call add(l:log, 'Searching with external executables')
-		for l:binary in keys(g:venom_tools)
-			if ! executable(l:binary)
-				continue
-			endif
-			let l:result = trim(system(g:venom_tools[l:binary]))
-			call extend(l:log, ['$ ' . g:venom_tools[l:binary], l:result])
-			if v:shell_error == 0 && ! empty(l:result)
-				let l:lines = split(l:result, '\n')
-				if len(l:lines) == 1
-					let l:path = matchstr(l:lines[0], '\zs/\S*')
-				else
-					call s:echo('error', printf('Erroneous shell output from "%s" %s',
-						\ l:binary, l:result))
-				endif
-			endif
-		endfor
 	endif
 
 	return [l:path, l:log]
