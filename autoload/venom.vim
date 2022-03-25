@@ -188,7 +188,7 @@ function! s:find_virtualenv(dir) abort
 		endfor
 	endif
 
-	# Fallback to venvs/pyenv
+	" Fallback to venvs/pyenv
 	let l:path = s:find_parents(a:dir, g:venom_root_markers)
 	if ! empty(l:path)
 		if isdirectory(l:path)
